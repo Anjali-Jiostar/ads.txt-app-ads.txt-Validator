@@ -10,8 +10,13 @@ On Mac, double-click:
 start.command
 ```
 
-
 The script starts the server and opens the browser automatically.
+
+If macOS says the file cannot be executed, run this once in Terminal from the project folder:
+
+```bash
+chmod +x start.command
+```
 
 If port `8080` is already busy, it uses the next free port and prints the URL in Terminal, for example:
 
