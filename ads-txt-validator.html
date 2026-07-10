@@ -63,8 +63,6 @@ section{margin-bottom:1.75rem}
 .panel-title-c{color:var(--blue)}
 .panel-title-n{color:var(--green)}
 .panel-btns{display:flex;gap:.35rem}
-.btn-file{display:inline-flex;align-items:center;gap:.3rem;background:var(--surface2);color:var(--muted);padding:.3rem .65rem;border-radius:var(--rx);font-size:.72rem;font-weight:500;border:1px solid var(--border);cursor:pointer;transition:var(--tr);font-family:var(--sans)}
-.btn-file:hover{background:var(--border);color:var(--text)}
 .paste-area{width:100%;height:210px;font-family:var(--mono);font-size:.75rem;line-height:1.68;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:.75rem .9rem;resize:vertical;outline:none;transition:border-color var(--tr)}
 .paste-area:focus{border-color:var(--indigo)}
 .paste-area::placeholder{color:var(--muted2)}
@@ -79,7 +77,6 @@ section{margin-bottom:1.75rem}
 .btn-sec:hover{background:var(--surface3);color:var(--text);border-color:var(--border2)}
 .btn-ghost{display:inline-flex;align-items:center;gap:.3rem;background:transparent;color:var(--muted);padding:.3rem .6rem;border-radius:var(--rx);font-size:.73rem;border:1px solid transparent;cursor:pointer;font-family:var(--sans);transition:var(--tr)}
 .btn-ghost:hover{border-color:var(--border);color:var(--text)}
-.btn-example{color:var(--indigo-h)}
 
 /* ── Stat cards ── */
 .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-bottom:1.1rem}
@@ -95,13 +92,11 @@ section{margin-bottom:1.75rem}
 .sc-err   .sc-val{color:var(--red)}
 .sc-warn  .sc-val{color:var(--amber)}
 .sc-dup   .sc-val{color:var(--orange)}
-.sc-notice.sc-val,.sc-notice .sc-val{color:var(--sky)}
 .sc.sel.sc-total {box-shadow:0 0 0 2px var(--border2);border-color:var(--border2)}
 .sc.sel.sc-valid {box-shadow:0 0 0 2px var(--green);border-color:var(--green)}
 .sc.sel.sc-err   {box-shadow:0 0 0 2px var(--red);border-color:var(--red)}
 .sc.sel.sc-warn  {box-shadow:0 0 0 2px var(--amber);border-color:var(--amber)}
 .sc.sel.sc-dup   {box-shadow:0 0 0 2px var(--orange);border-color:var(--orange)}
-.sc.sel.sc-notice{box-shadow:0 0 0 2px var(--sky);border-color:var(--sky)}
 
 /* ── Tabs ── */
 .tabs-bar{display:flex;gap:.18rem;background:var(--surface2);padding:.22rem;border-radius:var(--rs);border:1px solid var(--border);flex-wrap:wrap;margin-bottom:.85rem}
@@ -158,7 +153,6 @@ section{margin-bottom:1.75rem}
 .rr-err   {border-left-color:var(--red)!important;background:rgba(239,68,68,.025)!important}
 .rr-warn  {border-left-color:var(--amber)!important;background:rgba(245,158,11,.025)!important}
 .rr-dup   {border-left-color:var(--orange)!important;background:rgba(249,115,22,.025)!important}
-.rr-notice{border-left-color:var(--sky)!important;background:rgba(56,189,248,.02)!important}
 .rr-dim   {border-left-color:var(--border)!important;opacity:.55}
 
 /* Source pills */
@@ -173,7 +167,6 @@ section{margin-bottom:1.75rem}
 .p-err   {background:var(--red-bg);    color:var(--red);    border:1px solid var(--red-b)}
 .p-warn  {background:var(--amber-bg);  color:var(--amber);  border:1px solid var(--amber-b)}
 .p-dup   {background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-b)}
-.p-notice{background:var(--sky-bg);    color:var(--sky);    border:1px solid var(--sky-b)}
 .p-cmt   {background:rgba(148,163,184,.07);color:var(--muted);border:1px solid rgba(148,163,184,.18)}
 .p-var   {background:var(--purple-bg); color:var(--purple); border:1px solid var(--purple-b)}
 
@@ -281,13 +274,13 @@ section{margin-bottom:1.35rem}
 .paste-area,.included-out,.new-out{background:#fff;color:var(--text);border:1px solid var(--border);border-radius:var(--rs);font-size:.75rem}
 .paste-area:focus,.search-input:focus{border-color:var(--border2);box-shadow:none}
 .input-actions{margin-top:.75rem}
-.btn-primary,.btn-sec,.btn-file,.btn-ghost,.btn-copy,.btn-dl,.sf-btn,.pbtn{
+.btn-primary,.btn-sec,.btn-ghost,.btn-copy,.btn-dl,.sf-btn,.pbtn{
   border-radius:var(--rs);box-shadow:none;transition:background var(--tr),border-color var(--tr),color var(--tr);font-weight:600
 }
 .btn-primary{background:var(--text);color:#fff;padding:.5rem 1rem}
 .btn-primary:hover{background:#000;transform:none;box-shadow:none}
 .btn-sec{background:var(--surface);color:var(--text);border-color:var(--border)}
-.btn-sec:hover,.btn-file:hover,.btn-copy:hover,.pbtn:hover:not(:disabled){background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.btn-sec:hover,.btn-copy:hover,.pbtn:hover:not(:disabled){background:var(--surface3);color:var(--text);border-color:var(--border2)}
 .btn-ghost{color:var(--muted)}
 .btn-ghost:hover{background:var(--surface2);border-color:var(--border)}
 .stat-grid{gap:.55rem;margin-bottom:.8rem}
@@ -295,7 +288,7 @@ section{margin-bottom:1.35rem}
 .sc:hover{transform:none;border-color:var(--border2)}
 .sc-val{font-size:1.25rem}
 .sc-lbl{font-size:.62rem;letter-spacing:.04em}
-.sc.sel.sc-total,.sc.sel.sc-valid,.sc.sel.sc-err,.sc.sel.sc-warn,.sc.sel.sc-dup,.sc.sel.sc-notice{
+.sc.sel.sc-total,.sc.sel.sc-valid,.sc.sel.sc-err,.sc.sel.sc-warn,.sc.sel.sc-dup{
   box-shadow:none;border-color:var(--text);background:var(--surface2)
 }
 .tabs-bar{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:0;gap:.25rem}
@@ -312,7 +305,7 @@ section{margin-bottom:1.35rem}
 .rtbl th{font-size:.63rem;letter-spacing:.04em;color:var(--muted)}
 .rtbl tbody tr{border-left-width:2px}
 .rtbl tbody tr:hover{background:var(--surface2)}
-.rr-err,.rr-warn,.rr-dup,.rr-notice{background:#fff!important}
+.rr-err,.rr-warn,.rr-dup{background:#fff!important}
 .sp,.pill,.lpill,.fc{border-radius:var(--rx);letter-spacing:.02em;text-transform:none;font-weight:650}
 .p-valid,.fc-in{background:var(--green-bg);color:var(--green);border-color:var(--green-b)}
 .p-err,.fc-ex{background:var(--red-bg);color:var(--red);border-color:var(--red-b)}
@@ -374,7 +367,7 @@ main{padding-top:1.45rem}
 .btn-primary{background:#2563eb;border:1px solid #2563eb;color:#fff}
 .btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8}
 .btn-sec{background:#fff}
-.btn-sec:hover,.btn-ghost:hover,.btn-file:hover,.btn-copy:hover,.pbtn:hover:not(:disabled){
+.btn-sec:hover,.btn-ghost:hover,.btn-copy:hover,.pbtn:hover:not(:disabled){
   background:#f8fafc;border-color:#cbd5e1;
 }
 .btn-ghost{border-color:transparent}
@@ -382,7 +375,7 @@ main{padding-top:1.45rem}
 .btn-dl:hover{background:#1d4ed8;border-color:#1d4ed8}
 .sc{padding:.75rem .85rem}
 .sc-val{font-size:1.35rem}
-.sc.sel.sc-total,.sc.sel.sc-valid,.sc.sel.sc-err,.sc.sel.sc-warn,.sc.sel.sc-dup,.sc.sel.sc-notice{
+.sc.sel.sc-total,.sc.sel.sc-valid,.sc.sel.sc-err,.sc.sel.sc-warn,.sc.sel.sc-dup{
   border-color:#93c5fd;background:#eff6ff;
 }
 .tabs-bar{border-bottom-color:#d9e2ec}
@@ -1015,7 +1008,6 @@ function applyFilters() {
       case 'errors':     return b === 'errors';
       case 'warnings':   return b === 'warnings';
       case 'duplicates': return b === 'duplicates';
-      case 'notices':    return b === 'notices';
       case 'valid':      return b === 'valid';
       case 'other':      return r.type === 'comment' || r.type === 'variable';
       default: return true;
@@ -1206,7 +1198,6 @@ function rowCls(r) {
     case 'errors':     return 'rr-err';
     case 'warnings':   return 'rr-warn';
     case 'duplicates': return 'rr-dup';
-    case 'notices':    return 'rr-notice';
     case 'other':      return 'rr-dim';
     default:           return '';
   }
@@ -1216,7 +1207,6 @@ function stPill(r) {
   if (b === 'errors')     return '<span class="pill p-err">Error</span>';
   if (b === 'duplicates') return '<span class="pill p-dup">Duplicate</span>';
   if (b === 'warnings')   return '<span class="pill p-warn">Warning</span>';
-  if (b === 'notices')    return '<span class="pill p-notice">Notice</span>';
   if (r.type === 'comment')  return '<span class="pill p-cmt">Comment</span>';
   if (r.type === 'variable') return '<span class="pill p-var">Variable</span>';
   return '<span class="pill p-valid">Valid</span>';
@@ -1255,36 +1245,9 @@ function clearAll() {
   rows = []; filtered = []; updateSectionControls();
 }
 
-const EXAMPLE = `# <Google>
-google.com, pub-4874685623693608, DIRECT, f08c47fec0942fa0
-appnexus.com, 12290, RESELLER
-rubiconproject.com, 23564, RESELLER, 0bfd66d529a55806
-smartadserver.com, 4257, Direct
-Media.net, 8CUD0UKE8, RESELLER
-smartadserver.com, DIRECT, 060d053dcf45cbf3
-conversantmedia.com, 100141, DIRECT/RESELLER, 03113cd04947736d
-MANAGERDOMAIN=tapmind.com
-inventorypartnerdomain=playstream.media
-lijit.com, 270791, DIRECT, fafdf38b16bf6b2b #SOVRN
-appnexus.com, 12290, RESELLER
-CONTACT=adops@example.com`;
-
-function loadExample() {
-  $('ta-c').value = EXAMPLE;
-  updateMeta('ta-c');
-  toast('Example loaded — click Analyze & Validate', 'ok');
-}
-
 ['c','n'].forEach(w => {
   const taEl = $('ta-'+w);
   if (taEl) taEl.addEventListener('input', () => updateMeta('ta-'+w));
-
-  const fiEl = $('fi-'+w);
-  if (fiEl) {
-    fiEl.addEventListener('change', e => {
-      const f = e.target.files[0]; if (f) readFile(f, w); e.target.value='';
-    });
-  }
 
   const dz = $('dz-'+w);
   if (dz) {

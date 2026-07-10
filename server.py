@@ -9,7 +9,6 @@ import json
 import os
 import ssl
 import subprocess
-import urllib.parse
 import urllib.request
 
 PORT = int(os.environ.get('PORT', '8080'))
@@ -83,25 +82,6 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if self.path.startswith('/hotstar-ads.txt'):
             try:
                 body = fetch_remote_text(TARGET).encode('utf-8')
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/plain; charset=utf-8')
-                self.send_header('Cache-Control', 'no-store')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(body)
-            except Exception as exc:
-                self.send_error(502, str(exc))
-            return
-
-        if self.path.startswith('/proxy'):
-            qs = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
-            url = qs.get('url', [''])[0]
-            if not url:
-                self.send_error(400, 'Missing ?url= parameter')
-                return
-
-            try:
-                body = fetch_remote_text(url).encode('utf-8')
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/plain; charset=utf-8')
                 self.send_header('Cache-Control', 'no-store')
