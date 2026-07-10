@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ads.txt / app-ads.txt Validator</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b1120;--surface:#141e30;--surface2:#1c2a3d;--surface3:#243347;
+  --border:#2a3a50;--border2:#3d5068;
+  --text:#e2e8f0;--muted:#8899b0;--muted2:#566578;
+  --green:#10b981;--green-bg:rgba(16,185,129,.1);--green-b:rgba(16,185,129,.28);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);--amber-b:rgba(245,158,11,.28);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.1);--red-b:rgba(239,68,68,.28);
+  --orange:#f97316;--orange-bg:rgba(249,115,22,.1);--orange-b:rgba(249,115,22,.28);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,.1);--blue-b:rgba(59,130,246,.28);
+  --sky:#38bdf8;--sky-bg:rgba(56,189,248,.1);--sky-b:rgba(56,189,248,.28);
+  --purple:#a855f7;--purple-bg:rgba(168,85,247,.1);--purple-b:rgba(168,85,247,.28);
+  --indigo:#6366f1;--indigo-h:#818cf8;--indigo-bg:rgba(99,102,241,.12);--indigo-b:rgba(99,102,241,.35);
+  --r:10px;--rs:6px;--rx:4px;
+  --mono:'Consolas','Menlo','Courier New',monospace;
+  --sans:system-ui,-apple-system,sans-serif;
+  --tr:.15s ease;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+.hidden{display:none!important}
+.container{max-width:1380px;margin:0 auto;padding:0 1.25rem}
+
+/* ── Header ── */
+header{
+  background:linear-gradient(160deg,#07101e 0%,#0d1830 40%,#111827 100%);
+  border-bottom:1px solid var(--border);padding:1.5rem 0;
+  position:sticky;top:0;z-index:200;backdrop-filter:blur(10px);
+}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.hdr-left{display:flex;align-items:center;gap:.9rem}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--indigo),#8b5cf6);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 20px rgba(99,102,241,.3)}
+.logo-icon svg{width:19px;height:19px;stroke:#fff}
+h1{font-size:1.35rem;font-weight:700;letter-spacing:-.3px;background:linear-gradient(135deg,#e2e8f0 20%,#a5b4fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hdr-sub{color:var(--muted);font-size:.78rem;margin-top:.1rem}
+.iab-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .6rem;background:var(--indigo-bg);border:1px solid var(--indigo-b);border-radius:99px;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--indigo-h);-webkit-text-fill-color:var(--indigo-h);flex-shrink:0}
+
+main{padding:1.75rem 0 6rem}
+section{margin-bottom:1.75rem}
+
+/* ── Section label ── */
+.sec-lbl{display:flex;align-items:center;gap:.65rem;margin-bottom:.9rem}
+.sec-lbl span{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted2);white-space:nowrap}
+.sec-lbl-line{flex:1;height:1px;background:var(--border)}
+
+/* ── Input grid ── */
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:780px){.input-grid{grid-template-columns:1fr}}
+.input-panel{background:var(--surface);border:2px dashed var(--border);border-radius:var(--r);padding:1.1rem 1.2rem;transition:border-color var(--tr),background var(--tr)}
+.input-panel.drag-over{border-color:var(--indigo);background:rgba(99,102,241,.04)}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;gap:.5rem;flex-wrap:wrap}
+.panel-title{font-size:.79rem;font-weight:700;display:flex;align-items:center;gap:.45rem}
+.src-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-c{background:var(--blue)}
+.dot-n{background:var(--green)}
+.panel-title-c{color:var(--blue)}
+.panel-title-n{color:var(--green)}
+.panel-btns{display:flex;gap:.35rem}
+.btn-file{display:inline-flex;align-items:center;gap:.3rem;background:var(--surface2);color:var(--muted);padding:.3rem .65rem;border-radius:var(--rx);font-size:.72rem;font-weight:500;border:1px solid var(--border);cursor:pointer;transition:var(--tr);font-family:var(--sans)}
+.btn-file:hover{background:var(--border);color:var(--text)}
+.paste-area{width:100%;height:210px;font-family:var(--mono);font-size:.75rem;line-height:1.68;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--rs);padding:.75rem .9rem;resize:vertical;outline:none;transition:border-color var(--tr)}
+.paste-area:focus{border-color:var(--indigo)}
+.paste-area::placeholder{color:var(--muted2)}
+.panel-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.55rem}
+.p-meta{font-size:.7rem;color:var(--muted2)}
+
+.input-actions{display:flex;align-items:center;justify-content:flex-end;gap:.65rem;margin-top:.9rem;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:.42rem;background:var(--indigo);color:#fff;padding:.58rem 1.65rem;border-radius:var(--rs);font-size:.86rem;font-weight:600;border:none;cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.btn-primary:hover{background:var(--indigo-h);transform:translateY(-1px);box-shadow:0 4px 20px rgba(99,102,241,.38)}
+.btn-primary:active{transform:none}
+.btn-sec{display:inline-flex;align-items:center;gap:.38rem;background:var(--surface2);color:var(--muted);padding:.54rem 1.1rem;border-radius:var(--rs);font-size:.8rem;font-weight:600;border:1px solid var(--border);cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.btn-sec:hover{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.btn-ghost{display:inline-flex;align-items:center;gap:.3rem;background:transparent;color:var(--muted);padding:.3rem .6rem;border-radius:var(--rx);font-size:.73rem;border:1px solid transparent;cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.btn-ghost:hover{border-color:var(--border);color:var(--text)}
+.btn-example{color:var(--indigo-h)}
+
+/* ── Stat cards ── */
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-bottom:1.1rem}
+@media(max-width:1080px){.stat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.75rem .9rem;cursor:pointer;transition:var(--tr);user-select:none}
+.sc:hover{transform:translateY(-2px);border-color:var(--border2)}
+.sc-val{font-size:1.45rem;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.sc-lbl{font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:.15rem}
+.sc-sub{font-size:.6rem;color:var(--muted2);margin-top:.12rem}
+.sc-total .sc-val{color:var(--text)}
+.sc-valid .sc-val{color:var(--green)}
+.sc-err   .sc-val{color:var(--red)}
+.sc-warn  .sc-val{color:var(--amber)}
+.sc-dup   .sc-val{color:var(--orange)}
+.sc-notice.sc-val,.sc-notice .sc-val{color:var(--sky)}
+.sc.sel.sc-total {box-shadow:0 0 0 2px var(--border2);border-color:var(--border2)}
+.sc.sel.sc-valid {box-shadow:0 0 0 2px var(--green);border-color:var(--green)}
+.sc.sel.sc-err   {box-shadow:0 0 0 2px var(--red);border-color:var(--red)}
+.sc.sel.sc-warn  {box-shadow:0 0 0 2px var(--amber);border-color:var(--amber)}
+.sc.sel.sc-dup   {box-shadow:0 0 0 2px var(--orange);border-color:var(--orange)}
+.sc.sel.sc-notice{box-shadow:0 0 0 2px var(--sky);border-color:var(--sky)}
+
+/* ── Tabs ── */
+.tabs-bar{display:flex;gap:.18rem;background:var(--surface2);padding:.22rem;border-radius:var(--rs);border:1px solid var(--border);flex-wrap:wrap;margin-bottom:.85rem}
+.tb{padding:.32rem .72rem;border-radius:3px;font-size:.74rem;font-weight:600;color:var(--muted);background:transparent;border:none;cursor:pointer;font-family:var(--sans);display:flex;align-items:center;gap:.28rem;transition:var(--tr);white-space:nowrap}
+.tb:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.tb.sel{background:var(--indigo);color:#fff}
+.tc{font-size:.62rem;padding:.02rem .32rem;border-radius:99px;font-weight:700;background:rgba(255,255,255,.2)}
+.tb:not(.sel) .tc{background:var(--border);color:var(--muted)}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:190px}
+.si{position:absolute;left:.62rem;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none;line-height:0}
+.search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);padding:.42rem .75rem .42rem 1.95rem;font-size:.79rem;outline:none;font-family:var(--sans);transition:border-color var(--tr)}
+.search-input:focus{border-color:var(--indigo)}
+.search-input::placeholder{color:var(--muted2)}
+.src-filter{display:flex;gap:.25rem}
+.sf-btn{padding:.28rem .6rem;border-radius:var(--rx);font-size:.7rem;font-weight:600;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.sf-btn:hover{border-color:var(--border2)}
+.sf-all{border-color:var(--indigo-b);background:var(--indigo-bg);color:var(--indigo-h)}
+.sf-cur{border-color:var(--blue-b);background:var(--blue-bg);color:var(--blue)}
+.sf-new{border-color:var(--green-b);background:var(--green-bg);color:var(--green)}
+.row-count{font-size:.74rem;color:var(--muted2);white-space:nowrap}
+
+/* ── Table ── */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.rtbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.rtbl thead tr{background:var(--surface2);border-bottom:1px solid var(--border)}
+.rtbl th{padding:.55rem .82rem;text-align:left;font-weight:600;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);white-space:nowrap}
+.rtbl tbody tr{border-bottom:1px solid var(--border);border-left:3px solid transparent;transition:background var(--tr)}
+.rtbl tbody tr:last-child{border-bottom:none}
+.rtbl tbody tr:hover{background:rgba(255,255,255,.018)}
+.rtbl td{padding:.52rem .82rem;vertical-align:top}
+.td-line{width:52px;color:var(--muted2);font-family:var(--mono);font-size:.7rem;text-align:right;padding-right:.5rem;white-space:nowrap}
+.td-sel{width:40px;text-align:center}
+.row-check{accent-color:var(--indigo);cursor:pointer}
+.head-check{display:flex;align-items:center;justify-content:center}
+.head-check input{accent-color:var(--indigo);cursor:pointer}
+.td-src{width:78px}
+.td-raw{font-family:var(--mono);font-size:.72rem;word-break:break-all;min-width:0}
+.raw-txt{color:var(--text)}
+.iss-list{margin-top:.3rem;display:flex;flex-direction:column;gap:.16rem}
+.iss{display:flex;align-items:flex-start;gap:.3rem;font-size:.67rem;font-family:var(--sans);line-height:1.4}
+.iss-e{color:var(--red)}
+.iss-w{color:var(--amber)}
+.iss-n{color:var(--sky)}
+.iss-code{font-family:var(--mono);font-size:.6rem;opacity:.65;flex-shrink:0}
+.td-also{width:112px}
+.lpills{display:flex;flex-wrap:wrap;gap:.22rem}
+.lpill{display:inline-flex;align-items:center;padding:.05rem .36rem;border-radius:99px;font-size:.63rem;font-weight:700;font-family:var(--mono);background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.td-st{width:104px;white-space:nowrap}
+
+/* Row accents */
+.rr-err   {border-left-color:var(--red)!important;background:rgba(239,68,68,.025)!important}
+.rr-warn  {border-left-color:var(--amber)!important;background:rgba(245,158,11,.025)!important}
+.rr-dup   {border-left-color:var(--orange)!important;background:rgba(249,115,22,.025)!important}
+.rr-notice{border-left-color:var(--sky)!important;background:rgba(56,189,248,.02)!important}
+.rr-dim   {border-left-color:var(--border)!important;opacity:.55}
+
+/* Source pills */
+.sp{display:inline-flex;align-items:center;gap:.25rem;padding:.1rem .42rem;border-radius:99px;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.sp-c{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b)}
+.sp-n{background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)}
+.sp-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:currentColor}
+
+/* Status pills */
+.pill{display:inline-flex;align-items:center;padding:.14rem .52rem;border-radius:99px;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.p-valid {background:var(--green-bg);  color:var(--green);  border:1px solid var(--green-b)}
+.p-err   {background:var(--red-bg);    color:var(--red);    border:1px solid var(--red-b)}
+.p-warn  {background:var(--amber-bg);  color:var(--amber);  border:1px solid var(--amber-b)}
+.p-dup   {background:var(--orange-bg); color:var(--orange); border:1px solid var(--orange-b)}
+.p-notice{background:var(--sky-bg);    color:var(--sky);    border:1px solid var(--sky-b)}
+.p-cmt   {background:rgba(148,163,184,.07);color:var(--muted);border:1px solid rgba(148,163,184,.18)}
+.p-var   {background:var(--purple-bg); color:var(--purple); border:1px solid var(--purple-b)}
+
+/* ── Empty & Pagination ── */
+.empty{text-align:center;padding:3rem 2rem;color:var(--muted2)}
+.empty-ico{font-size:1.9rem;margin-bottom:.5rem}
+.empty-ttl{font-size:.88rem;font-weight:600;color:var(--muted);margin-bottom:.22rem}
+.empty-sub{font-size:.76rem}
+.pgn{display:flex;align-items:center;justify-content:space-between;padding:.58rem .95rem;border-top:1px solid var(--border);font-size:.72rem;color:var(--muted);flex-wrap:wrap;gap:.35rem}
+.pb{display:flex;gap:.18rem;flex-wrap:wrap}
+.pbtn{padding:.22rem .52rem;border-radius:var(--rx);background:var(--surface2);color:var(--muted);border:1px solid var(--border);font-size:.7rem;min-width:26px;text-align:center;cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.pbtn:hover:not(:disabled){background:var(--border);color:var(--text)}
+.pbtn.sel{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.pbtn:disabled{opacity:.32;cursor:not-allowed}
+.pellipsis{color:var(--muted2);padding:0 .2rem;font-size:.74rem;align-self:center}
+
+/* ── Fix & Export ── */
+.fix-banner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
+.fix-counts{display:flex;gap:.45rem;flex-wrap:wrap}
+.fc{display:inline-flex;align-items:center;gap:.28rem;padding:.2rem .62rem;border-radius:99px;font-size:.72rem;font-weight:600}
+.fc-in{background:var(--green-bg);color:var(--green);border:1px solid var(--green-b)}
+.fc-ex{background:var(--red-bg);color:var(--red);border:1px solid var(--red-b)}
+.fc-new{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-b)}
+.fix-note{font-size:.73rem;color:var(--muted2);max-width:540px}
+
+.fix-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+@media(max-width:1120px){.fix-grid{grid-template-columns:1fr}}
+.fix-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
+.fp-hdr{display:flex;align-items:center;justify-content:space-between;padding:.7rem .95rem;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0}
+.fp-ttl{font-size:.76rem;font-weight:700;display:flex;align-items:center;gap:.38rem}
+.fp-ttl-in{color:var(--green)}
+.fp-ttl-new{color:var(--blue)}
+.fp-ttl-ex{color:var(--red)}
+.fp-acts{display:flex;gap:.35rem}
+.btn-copy{display:inline-flex;align-items:center;gap:.28rem;padding:.26rem .6rem;border-radius:var(--rx);font-size:.7rem;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.btn-copy:hover{border-color:var(--border2);color:var(--text);background:var(--surface3)}
+.btn-dl{display:inline-flex;align-items:center;gap:.28rem;padding:.26rem .6rem;border-radius:var(--rx);font-size:.7rem;font-weight:600;border:1px solid var(--green-b);background:var(--green-bg);color:var(--green);cursor:pointer;font-family:var(--sans);transition:var(--tr)}
+.btn-dl:hover{background:rgba(16,185,129,.18)}
+.included-out{flex:1;width:100%;min-height:280px;font-family:var(--mono);font-size:.73rem;line-height:1.65;background:var(--surface2);color:#a7f3d0;border:none;outline:none;padding:.85rem .95rem;resize:vertical}
+.new-out{flex:1;width:100%;min-height:280px;font-family:var(--mono);font-size:.73rem;line-height:1.65;background:var(--surface2);color:#bfdbfe;border:none;outline:none;padding:.85rem .95rem;resize:vertical}
+.excl-scroll{overflow-y:auto;flex:1;min-height:280px;max-height:400px;background:var(--surface2)}
+.excl-tbl{width:100%;border-collapse:collapse;font-size:.74rem}
+.excl-tbl tr{border-bottom:1px solid var(--border)}
+.excl-tbl tr:last-child{border-bottom:none}
+.excl-tbl td{padding:.42rem .82rem;vertical-align:top}
+.excl-ln{color:var(--muted2);font-family:var(--mono);font-size:.68rem;width:46px;text-align:right;padding-right:.5rem;white-space:nowrap}
+.excl-raw{font-family:var(--mono);font-size:.71rem;word-break:break-all;color:var(--muted)}
+.excl-why{font-size:.67rem;color:var(--red);font-style:italic;margin-top:.13rem;line-height:1.4}
+.excl-src{width:68px;text-align:right}
+.excl-empty-row td{text-align:center;padding:2.5rem;color:var(--muted2);font-size:.8rem}
+
+/* ── Legend ── */
+.legend{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.9rem;font-size:.7rem;color:var(--muted)}
+.lg{display:inline-flex;align-items:center;gap:.35rem}
+.lg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.5rem 1.1rem;font-size:.8rem;font-weight:500;color:var(--text);box-shadow:0 4px 20px rgba(0,0,0,.45);z-index:9999;transition:transform .22s ease,opacity .22s ease;opacity:0;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok  {border-color:var(--green-b);color:var(--green)}
+.toast.err {border-color:var(--red-b);color:var(--red)}
+.toast.warn{border-color:var(--amber-b);color:var(--amber)}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted2)}
+
+/* Minimal UI pass */
+:root{
+  --bg:#f6f7f9;--surface:#ffffff;--surface2:#f2f4f7;--surface3:#e8ecf1;
+  --border:#d8dee8;--border2:#b8c2d0;
+  --text:#1f2937;--muted:#667085;--muted2:#98a2b3;
+  --green:#047857;--green-bg:#ecfdf3;--green-b:#abefc6;
+  --amber:#b54708;--amber-bg:#fffaeb;--amber-b:#fedf89;
+  --red:#b42318;--red-bg:#fef3f2;--red-b:#fecdca;
+  --orange:#b54708;--orange-bg:#fff6ed;--orange-b:#fed7aa;
+  --blue:#175cd3;--blue-bg:#eff8ff;--blue-b:#b2ddff;
+  --sky:#026aa2;--sky-bg:#f0f9ff;--sky-b:#b9e6fe;
+  --purple:#6941c6;--purple-bg:#f4f3ff;--purple-b:#d9d6fe;
+  --indigo:#344054;--indigo-h:#1d2939;--indigo-bg:#f2f4f7;--indigo-b:#d0d5dd;
+  --r:6px;--rs:4px;--rx:3px;
+  --tr:.12s ease;
+}
+html{scroll-behavior:auto}
+body{background:var(--bg);color:var(--text);line-height:1.5}
+.container{max-width:1280px}
+header{position:static;background:var(--surface);border-bottom:1px solid var(--border);padding:1rem 0;backdrop-filter:none}
+.hdr{align-items:flex-start}
+.logo-icon{display:none}
+h1{font-size:1.12rem;font-weight:650;letter-spacing:0;color:var(--text);background:none;-webkit-text-fill-color:currentColor}
+.hdr-sub{font-size:.76rem;color:var(--muted);margin-top:.15rem}
+.iab-badge{background:transparent;border:1px solid var(--border);color:var(--muted);-webkit-text-fill-color:var(--muted);border-radius:var(--rx);font-weight:600}
+main{padding:1.25rem 0 4rem}
+section{margin-bottom:1.35rem}
+.sec-lbl{margin-bottom:.6rem}
+.sec-lbl span{font-size:.68rem;letter-spacing:.04em;color:var(--muted);font-weight:650}
+.input-grid,.fix-grid{gap:.8rem}
+.input-panel{border:1px solid var(--border);background:var(--surface);border-radius:var(--r);padding:1rem}
+.input-panel.drag-over{border-color:var(--blue);background:var(--blue-bg)}
+.panel-title{font-size:.8rem;color:var(--text)}
+.panel-title-c,.panel-title-n{color:var(--text)}
+.src-dot{width:7px;height:7px}
+.paste-area,.included-out,.new-out{background:#fff;color:var(--text);border:1px solid var(--border);border-radius:var(--rs);font-size:.75rem}
+.paste-area:focus,.search-input:focus{border-color:var(--border2);box-shadow:none}
+.input-actions{margin-top:.75rem}
+.btn-primary,.btn-sec,.btn-file,.btn-ghost,.btn-copy,.btn-dl,.sf-btn,.pbtn{
+  border-radius:var(--rs);box-shadow:none;transition:background var(--tr),border-color var(--tr),color var(--tr);font-weight:600
+}
+.btn-primary{background:var(--text);color:#fff;padding:.5rem 1rem}
+.btn-primary:hover{background:#000;transform:none;box-shadow:none}
+.btn-sec{background:var(--surface);color:var(--text);border-color:var(--border)}
+.btn-sec:hover,.btn-file:hover,.btn-copy:hover,.pbtn:hover:not(:disabled){background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.btn-ghost{color:var(--muted)}
+.btn-ghost:hover{background:var(--surface2);border-color:var(--border)}
+.stat-grid{gap:.55rem;margin-bottom:.8rem}
+.sc{background:var(--surface);border-color:var(--border);border-radius:var(--r);padding:.65rem .75rem;box-shadow:none}
+.sc:hover{transform:none;border-color:var(--border2)}
+.sc-val{font-size:1.25rem}
+.sc-lbl{font-size:.62rem;letter-spacing:.04em}
+.sc.sel.sc-total,.sc.sel.sc-valid,.sc.sel.sc-err,.sc.sel.sc-warn,.sc.sel.sc-dup,.sc.sel.sc-notice{
+  box-shadow:none;border-color:var(--text);background:var(--surface2)
+}
+.tabs-bar{background:transparent;border:none;border-bottom:1px solid var(--border);border-radius:0;padding:0;gap:.25rem}
+.tb{border-radius:0;border-bottom:2px solid transparent;padding:.42rem .65rem;color:var(--muted)}
+.tb:hover{background:transparent;color:var(--text)}
+.tb.sel{background:transparent;color:var(--text);border-bottom-color:var(--text)}
+.tc,.tb:not(.sel) .tc{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.toolbar{gap:.5rem}
+.search-input{background:#fff;border-color:var(--border);font-size:.78rem}
+.sf-btn{background:#fff;color:var(--muted);border-color:var(--border)}
+.sf-all,.sf-cur,.sf-new{background:#fff;color:var(--text);border-color:var(--border2)}
+.tbl-wrap,.fix-panel{background:var(--surface);border-color:var(--border);border-radius:var(--r);box-shadow:none}
+.rtbl thead tr,.fp-hdr{background:var(--surface2)}
+.rtbl th{font-size:.63rem;letter-spacing:.04em;color:var(--muted)}
+.rtbl tbody tr{border-left-width:2px}
+.rtbl tbody tr:hover{background:var(--surface2)}
+.rr-err,.rr-warn,.rr-dup,.rr-notice{background:#fff!important}
+.sp,.pill,.lpill,.fc{border-radius:var(--rx);letter-spacing:.02em;text-transform:none;font-weight:650}
+.p-valid,.fc-in{background:var(--green-bg);color:var(--green);border-color:var(--green-b)}
+.p-err,.fc-ex{background:var(--red-bg);color:var(--red);border-color:var(--red-b)}
+.fc-new{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-b)}
+.p-warn{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-b)}
+.p-dup{background:var(--orange-bg);color:var(--orange);border-color:var(--orange-b)}
+.p-var{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.sp-c,.sp-n{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.legend{font-size:.68rem;color:var(--muted);margin-bottom:.7rem}
+.lg-dot{border-radius:50%;width:7px;height:7px}
+.fix-banner{margin-bottom:.8rem}
+.fix-note{font-size:.72rem}
+.btn-dl{background:var(--text);border-color:var(--text);color:#fff}
+.btn-dl:hover{background:#000;border-color:#000}
+.included-out{color:var(--text)}
+.new-out{color:var(--text)}
+.excl-scroll{background:#fff}
+.excl-why{color:var(--red);font-style:normal}
+.empty-ico{display:none}
+.toast{background:var(--surface);border-color:var(--border);box-shadow:none;border-radius:var(--r)}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--border2)}
+
+/* Subtle polish */
+:root{
+  --bg:#f3f6fb;--surface:#ffffff;--surface2:#f7f9fc;--surface3:#eef2f7;
+  --border:#d9e2ec;--border2:#aebdcc;
+  --text:#202936;--muted:#64748b;--muted2:#94a3b8;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-b:#bfdbfe;
+  --indigo:#2563eb;--indigo-h:#1d4ed8;--indigo-bg:#eff6ff;--indigo-b:#bfdbfe;
+  --r:8px;--rs:6px;--rx:4px;
+}
+body{background:linear-gradient(180deg,#f8fafc 0%,var(--bg) 220px);color:var(--text)}
+.container{max-width:1320px}
+header{background:rgba(255,255,255,.92);border-bottom:1px solid var(--border);box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.hdr{align-items:center}
+.logo-icon{display:flex;width:34px;height:34px;border-radius:8px;background:#eff6ff;border:1px solid #bfdbfe;box-shadow:none;color:var(--blue)}
+.logo-icon svg{width:17px;height:17px;stroke:currentColor}
+h1{font-size:1.18rem;font-weight:700;color:#111827}
+.hdr-sub{color:#667085}
+.iab-badge{background:#f8fafc;border-color:#d0d5dd;color:#475467;-webkit-text-fill-color:#475467}
+main{padding-top:1.45rem}
+.sec-lbl span{color:#475467}
+.sec-lbl-line{background:#e4e7ec}
+.input-panel,.tbl-wrap,.fix-panel,.sc{
+  box-shadow:0 1px 2px rgba(16,24,40,.05);
+}
+.input-panel{border-color:#d7dde7}
+.input-panel:hover,.sc:hover,.tbl-wrap:hover,.fix-panel:hover{border-color:#c8d1dd}
+.panel-title{font-weight:700}
+.dot-c{background:#2563eb}
+.dot-n{background:#059669}
+.paste-area,.included-out,.new-out{
+  background:#fbfdff;border-color:#d7dde7;line-height:1.62;
+}
+.paste-area:focus,.search-input:focus{
+  border-color:#93c5fd;box-shadow:0 0 0 3px rgba(37,99,235,.08);
+}
+.btn-primary{background:#2563eb;border:1px solid #2563eb;color:#fff}
+.btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8}
+.btn-sec{background:#fff}
+.btn-sec:hover,.btn-ghost:hover,.btn-file:hover,.btn-copy:hover,.pbtn:hover:not(:disabled){
+  background:#f8fafc;border-color:#cbd5e1;
+}
+.btn-ghost{border-color:transparent}
+.btn-dl{background:#2563eb;border-color:#2563eb}
+.btn-dl:hover{background:#1d4ed8;border-color:#1d4ed8}
+.sc{padding:.75rem .85rem}
+.sc-val{font-size:1.35rem}
+.sc.sel.sc-total,.sc.sel.sc-valid,.sc.sel.sc-err,.sc.sel.sc-warn,.sc.sel.sc-dup,.sc.sel.sc-notice{
+  border-color:#93c5fd;background:#eff6ff;
+}
+.tabs-bar{border-bottom-color:#d9e2ec}
+.tb.sel{border-bottom-color:#2563eb;color:#1d4ed8}
+.search-input{background:#fff}
+.sf-all,.sf-cur,.sf-new{border-color:#bfdbfe;background:#eff6ff;color:#1d4ed8}
+.rtbl thead tr,.fp-hdr{background:#f8fafc}
+.rtbl tbody tr:hover{background:#f8fafc}
+.sp-c{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.sp-n{background:#ecfdf3;color:#047857;border-color:#abefc6}
+.pill,.sp,.lpill,.fc{font-size:.64rem}
+.fix-panel{min-height:360px}
+.toast{box-shadow:0 8px 20px rgba(16,24,40,.12)}
+.hdr-left{align-items:flex-start}
+.hdr-copy{display:flex;flex-direction:column;gap:.45rem}
+.hdr-points{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.hdr-point{display:inline-flex;align-items:center;gap:.32rem;padding:.2rem .48rem;border:1px solid #d9e2ec;border-radius:999px;background:#fff;color:#475467;font-size:.68rem;font-weight:600;line-height:1.2}
+.hdr-point-dot{width:6px;height:6px;border-radius:50%;background:#2563eb;flex-shrink:0}
+.hdr-point-ok .hdr-point-dot{background:#059669}
+.hdr-point-review .hdr-point-dot{background:#b54708}
+.hdr-side{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+.server-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .58rem;border-radius:var(--rx);background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:.68rem;font-weight:700}
+@media(max-width:760px){
+  .hdr{align-items:flex-start}
+  .hdr-side{justify-content:flex-start;width:100%}
+}
+
+/* Focused work surface */
+header{padding:1.15rem 0}
+.hdr{gap:1.25rem}
+.logo-icon{width:38px;height:38px;background:linear-gradient(180deg,#ffffff 0%,#eff6ff 100%)}
+h1{font-size:1.24rem}
+.hdr-sub{font-size:.78rem}
+.hdr-point{box-shadow:0 1px 1px rgba(16,24,40,.03)}
+.server-badge{box-shadow:0 1px 1px rgba(37,99,235,.06)}
+#sec-input{position:relative}
+.input-grid{
+  background:#ffffff;
+  border:1px solid #d9e2ec;
+  border-radius:12px;
+  padding:.75rem;
+  box-shadow:0 8px 24px rgba(16,24,40,.06);
+}
+.input-panel{
+  box-shadow:none;
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+}
+.input-panel[id="dz-c"]{border-left:3px solid #2563eb}
+.input-panel[id="dz-n"]{border-left:3px solid #059669}
+.panel-hdr{padding-bottom:.55rem;border-bottom:1px solid #eef2f7}
+.panel-foot{border-top:1px solid #eef2f7;padding-top:.5rem}
+.paste-area{margin-top:.15rem}
+.input-actions{justify-content:space-between}
+.btn-primary{
+  min-height:38px;
+  padding:.55rem 1.05rem;
+  box-shadow:0 6px 14px rgba(37,99,235,.16);
+}
+.btn-primary:hover{box-shadow:0 8px 18px rgba(37,99,235,.2)}
+.stat-grid{margin-top:.1rem}
+.sc{position:relative;overflow:hidden}
+.sc::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:#d9e2ec}
+.sc-valid::before{background:#059669}
+.sc-err::before{background:#dc2626}
+.sc-warn::before{background:#d97706}
+.sc-dup::before{background:#ea580c}
+.sc-total::before{background:#2563eb}
+.tabs-bar{background:#fff;border:1px solid #d9e2ec;border-radius:10px;padding:.25rem;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.tb{border-radius:7px;border-bottom:none}
+.tb.sel{background:#eff6ff;color:#1d4ed8;border-bottom:none}
+.toolbar{background:#fff;border:1px solid #d9e2ec;border-radius:10px;padding:.5rem;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.tbl-wrap{box-shadow:0 4px 14px rgba(16,24,40,.05)}
+.fix-panel{box-shadow:0 4px 14px rgba(16,24,40,.05)}
+@media(max-width:780px){
+  .input-grid{padding:.55rem}
+  .input-actions{justify-content:flex-end}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="hdr-copy">
+          <h1>ads.txt / app-ads.txt Validator</h1>
+          <p class="hdr-sub">Validate, review, and export ads.txt entries</p>
+          <div class="hdr-points" aria-label="Key workflow points">
+            <span class="hdr-point hdr-point-ok"><span class="hdr-point-dot"></span>Hotstar auto-load</span>
+            <span class="hdr-point hdr-point-review"><span class="hdr-point-dot"></span>Warnings &amp; duplicates review</span>
+            <span class="hdr-point"><span class="hdr-point-dot"></span>Clean export</span>
+          </div>
+        </div>
+      </div>
+      <div class="hdr-side">
+        <span class="server-badge">Local server</span>
+        <span class="iab-badge">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          IAB Spec v1.0.2
+        </span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="container">
+
+<!-- ── STEP 1: INPUT ── -->
+<section id="sec-input">
+  <div class="sec-lbl"><span>Step 1 — Input</span><div class="sec-lbl-line"></div></div>
+  <div class="input-grid">
+
+    <div class="input-panel" id="dz-c">
+      <div class="panel-hdr">
+        <div class="panel-title panel-title-c">
+          <span class="src-dot dot-c"></span> Current ads.txt / app-ads.txt
+        </div>
+        <div class="panel-btns">
+          <button class="btn-ghost" id="btn-reload-c" onclick="window.location.reload()" title="Reload from hotstar.com/ads.txt">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+      <textarea class="paste-area" id="ta-c" spellcheck="false" readonly
+        placeholder="Current ads.txt will auto-load here…"></textarea>
+      <div class="panel-foot">
+        <span class="p-meta" id="pm-c">0 lines</span>
+      </div>
+    </div>
+
+    <div class="input-panel" id="dz-n">
+      <div class="panel-hdr">
+        <div class="panel-title panel-title-n">
+          <span class="src-dot dot-n"></span> New Entries to Add
+        </div>
+        <div class="panel-btns">
+          <button class="btn-ghost" onclick="clearPanel('n')">Clear</button>
+        </div>
+      </div>
+      <textarea class="paste-area" id="ta-n" spellcheck="false"
+        placeholder="Paste new entries to validate and merge here…&#10;&#10;rubiconproject.com, 17264, DIRECT, 0bfd66d529a55807&#10;openx.com, 537143056, RESELLER, 6a698e2ec38604c6"></textarea>
+      <div class="panel-foot">
+        <span class="p-meta" id="pm-n">0 lines</span>
+      </div>
+    </div>
+
+  </div>
+  <div class="input-actions">
+    <button class="btn-ghost" onclick="clearAll()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+      Clear All
+    </button>
+    <button class="btn-primary" onclick="runAnalysis()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Analyze &amp; Validate
+    </button>
+  </div>
+</section>
+
+<!-- ── STEP 2: RESULTS ── -->
+<section id="sec-results" class="hidden">
+  <div class="sec-lbl"><span>Step 2 — Validation Results</span><div class="sec-lbl-line"></div></div>
+
+  <div class="stat-grid">
+    <div class="sc sc-total" data-f="all"      onclick="scClick(this,'all')">
+      <div class="sc-val" id="sv-total">0</div><div class="sc-lbl">Total Lines</div>
+    </div>
+    <div class="sc sc-valid" data-f="valid"    onclick="scClick(this,'valid')">
+      <div class="sc-val" id="sv-valid">0</div><div class="sc-lbl">Valid Records</div>
+    </div>
+    <div class="sc sc-err"   data-f="errors"   onclick="scClick(this,'errors')">
+      <div class="sc-val" id="sv-err">0</div><div class="sc-lbl">Errors</div>
+    </div>
+    <div class="sc sc-warn"  data-f="warnings" onclick="scClick(this,'warnings')">
+      <div class="sc-val" id="sv-warn">0</div><div class="sc-lbl">Warnings</div>
+    </div>
+    <div class="sc sc-dup"   data-f="duplicates" onclick="scClick(this,'duplicates')">
+      <div class="sc-val" id="sv-dup">0</div><div class="sc-lbl">Duplicates</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="lg"><span class="lg-dot" style="background:var(--red)"></span>Errors — invalid records dropped on export</span>
+    <span class="lg"><span class="lg-dot" style="background:var(--amber)"></span>Warnings — invalid variables (kept, processable)</span>
+    <span class="lg"><span class="lg-dot" style="background:var(--orange)"></span>Duplicates — repeated records, first kept on export</span>
+  </div>
+
+  <div class="tabs-bar">
+    <button class="tb sel" data-t="all"         onclick="setTab('all')">All <span class="tc" id="tc-all">0</span></button>
+    <button class="tb"     data-t="errors"      onclick="setTab('errors')">Errors <span class="tc" id="tc-err">0</span></button>
+    <button class="tb"     data-t="warnings"    onclick="setTab('warnings')">Warnings <span class="tc" id="tc-warn">0</span></button>
+    <button class="tb"     data-t="duplicates"  onclick="setTab('duplicates')">Duplicates <span class="tc" id="tc-dup">0</span></button>
+    <button class="tb"     data-t="valid"       onclick="setTab('valid')">Valid <span class="tc" id="tc-valid">0</span></button>
+    <button class="tb"     data-t="other"       onclick="setTab('other')">Comments / Vars <span class="tc" id="tc-other">0</span></button>
+  </div>
+
+  <div class="toolbar">
+    <div class="sw">
+      <span class="si"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <input type="text" class="search-input" id="search-inp" placeholder="Search entries…" oninput="applyFilters()">
+    </div>
+    <div class="src-filter">
+      <button class="sf-btn sf-all" id="sfb-all" onclick="setSrc('all')">All</button>
+      <button class="sf-btn" id="sfb-c" onclick="setSrc('c')">Current</button>
+      <button class="sf-btn" id="sfb-n" onclick="setSrc('n')">New</button>
+    </div>
+    <span class="row-count" id="row-count">0 rows</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="rtbl">
+      <colgroup>
+        <col style="width:40px">
+        <col style="width:52px">
+        <col style="width:78px">
+        <col>
+        <col style="width:112px">
+        <col style="width:104px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th class="td-sel">
+            <label class="head-check"><input type="checkbox" id="sel-all" onchange="toggleAllSelection(this.checked)"></label>
+          </th>
+          <th class="td-line">Line</th>
+          <th>Source</th>
+          <th>Raw Entry &amp; Issues</th>
+          <th>Also on Lines</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="rtbody"></tbody>
+    </table>
+    <div id="tbl-empty" class="empty hidden">
+      <div class="empty-ico">🔍</div>
+      <div class="empty-ttl">No matching rows</div>
+      <div class="empty-sub">Adjust your search or filter</div>
+    </div>
+    <div id="pgn-bar" class="pgn hidden">
+      <span id="pgn-info"></span>
+      <div class="pb" id="pgn-btns"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:1rem">
+    <button class="btn-sec" onclick="buildFix()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Fix All &amp; Export
+    </button>
+  </div>
+</section>
+
+<!-- ── STEP 3: FIX & EXPORT ── -->
+<section id="sec-fix" class="hidden">
+  <div class="sec-lbl"><span>Step 3 — Fix &amp; Export</span><div class="sec-lbl-line"></div></div>
+
+  <div class="fix-banner">
+    <div class="fix-counts">
+      <span class="fc fc-in" id="fc-in">0 included</span>
+      <span class="fc fc-ex" id="fc-ex">0 excluded</span>
+      <span class="fc fc-new" id="fc-new">0 new</span>
+    </div>
+    <span class="fix-note">Current entries are selected by default; new entries are unselected. Tick/untick any row in Step&nbsp;2 to include or exclude it from the export.</span>
+  </div>
+
+  <div class="fix-grid">
+    <div class="fix-panel">
+      <div class="fp-hdr">
+        <div class="fp-ttl fp-ttl-in">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Included Lines
+        </div>
+        <div class="fp-acts">
+          <button class="btn-copy" onclick="copyIncluded()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+          <button class="btn-dl" onclick="dlFixed()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download ads.txt
+          </button>
+        </div>
+      </div>
+      <textarea class="included-out" id="incl-out" readonly></textarea>
+    </div>
+
+    <div class="fix-panel">
+      <div class="fp-hdr">
+        <div class="fp-ttl fp-ttl-new">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          New Lines Added
+        </div>
+        <div class="fp-acts">
+          <button class="btn-copy" onclick="copyNewLines()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+      <textarea class="new-out" id="new-out" readonly></textarea>
+    </div>
+
+    <div class="fix-panel">
+      <div class="fp-hdr">
+        <div class="fp-ttl fp-ttl-ex">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          Excluded Lines
+        </div>
+        <div class="fp-acts">
+          <button class="btn-copy" onclick="copyExcluded()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+      <div class="excl-scroll">
+        <table class="excl-tbl">
+          <tbody id="excl-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+const PG = 100;
+let rows = [], filtered = [], pg = 1, activeTab = 'all', srcFilt = 'all';
+let fixInc = [], fixExc = [], fixNew = [];
+
+/* Variables allowed by the adstxt.guru validator (case-sensitive: must be uppercase) */
+const KNOWN_VARS = new Set(['CONTACT', 'SUBDOMAIN', 'MANAGERDOMAIN', 'INVENTORYPARTNERDOMAIN']);
+
+/* ═══════════════════════════════════════════════
+   KNOWN CERTIFICATION AUTHORITY (TAG) IDs
+   Single-cert major exchanges. Used to raise:
+     • data-certification-incorrect  (ERROR)  — cert present but wrong
+     • missing certification authority ID (NOTICE) — cert absent
+   Domains NOT in this map are never flagged for cert issues,
+   which avoids false positives on smaller resellers.
+═══════════════════════════════════════════════ */
+const CERT_MAP = {
+  'google.com':'f08c47fec0942fa0','pubmatic.com':'5d62403b186f2ace',
+  'rubiconproject.com':'0bfd66d529a55807','openx.com':'6a698e2ec38604c6',
+  'appnexus.com':'f5ab79cb980f11d1','xandr.com':'f5ab79cb980f11d1',
+  '33across.com':'bbea06d9c4d2853c',
+  'smaato.com':'07bcf65f187117b4','indexexchange.com':'50b1c356f2c5c8fc',
+  'lijit.com':'fafdf38b16bf6b2b','sovrn.com':'fafdf38b16bf6b2b',
+  'yahoo.com':'e1a5b5b6e3255540','aol.com':'e1a5b5b6e3255540',
+  'conversantmedia.com':'03113cd04947736d','smartadserver.com':'060d053dcf45cbf3',
+  'adform.com':'9f5210a2f0999e32','inmobi.com':'83e75a7ae333ca9d',
+  'contextweb.com':'89ff185a4c4e857c','telaria.com':'1a4e959a1b50034a',
+  'tremorhub.com':'1a4e959a1b50034a','spotxchange.com':'7842df1d2fe2db34',
+  'spotx.tv':'7842df1d2fe2db34','gumgum.com':'ffdef49475d318a9',
+  'sonobi.com':'d1a215d9eb5aee9e','triplelift.com':'6c33edb13117fd86',
+  'loopme.com':'6c8d5f95897a5a3b','opera.com':'55a0c5fd61378de3',
+  'rtbhouse.com':'4f3b94578e85950c','aniview.com':'78b21b97965ec3f8',
+  'teads.tv':'15a9c44f6d26cbe1','insticator.com':'b3511ffcafb23a32',
+  'gannett.com':'dd61c0c3f57b6942','adtelligent.com':'8ce87912eb022a51',
+  'lemmatechnologies.com':'7829010c5bebd1fb'
+};
+
+/* ═══════════════════════════════════════════════
+   HELPERS: severity object per line
+═══════════════════════════════════════════════ */
+function mkIssue(code, level, msg) { return { code, level, msg }; }
+
+function validDomain(d) {
+  if (!d || d.length > 253 || !d.includes('.')) return false;
+  return d.split('.').every(l => {
+    if (!l || l.length > 63 || l[0] === '-' || l[l.length-1] === '-') return false;
+    return /^[a-zA-Z0-9-]+$/.test(l);
+  });
+}
+/* Cert IDs are hex-ish tokens; TAG IDs are 16 hex chars but many
+   exchanges use other alphanumeric forms, so we only reject spaces. */
+function validCertToken(c) { return c.length > 0 && !/[\s,]/.test(c); }
+
+/* ═══════════════════════════════════════════════
+   PARSE ONE LINE  →  row with errors[]/warns[]/notices[]
+═══════════════════════════════════════════════ */
+function parseLine(raw, num, src) {
+  const t = raw.trim();
+  const base = { num, raw, src, errors:[], warns:[], notices:[], alsoOn:[] };
+
+  if (!t) return { ...base, type:'blank' };
+
+  // ── Comment ──
+  if (t[0] === '#') {
+    const notices = [];
+    if (/[^\x00-\x7F]/.test(t))
+      notices.push(mkIssue('comment-compatibility','notice','Comment contains unusual characters/symbols, consider removing for compatibility'));
+    return { ...base, type:'comment', notices };
+  }
+
+  const ci = t.indexOf(','), ei = t.indexOf('=');
+
+  // ── Variable: NAME=VALUE (an '=' appears before any comma) ──
+  if (ei > 0 && (ci < 0 || ei < ci)) {
+    const rawName = t.slice(0, ei);
+    const rawVal  = t.slice(ei + 1);
+    const name = rawName.trim(), val = rawVal.trim();
+    const nameU = name.toUpperCase();
+    const errors = [], warns = [], notices = [];
+
+    if (rawName !== name || rawVal !== val) {
+      warns.push(mkIssue('variable-name-invalid','warning',
+        `Variable name "${name}" is invalid — variable declarations must not contain whitespace around "="`));
+    } else if (!KNOWN_VARS.has(nameU)) {
+      warns.push(mkIssue('variable-name-invalid','warning',
+        `Variable name "${name}" is invalid — must be CONTACT, SUBDOMAIN, MANAGERDOMAIN or INVENTORYPARTNERDOMAIN`));
+    } else if ((nameU === 'SUBDOMAIN' || nameU === 'INVENTORYPARTNERDOMAIN' || nameU === 'MANAGERDOMAIN') && !validDomain(val)) {
+      warns.push(mkIssue('variable-'+nameU.toLowerCase()+'-invalid','warning',
+        `Variable ${nameU.toLowerCase()} value "${val}" is invalid (expected a domain)`));
+    } else if (nameU === 'CONTACT' && !val) {
+      warns.push(mkIssue('variable-contact-invalid','warning','Variable contact value is invalid'));
+    }
+    return { ...base, type:'variable', varKey:nameU, varVal:val, errors, warns, notices };
+  }
+
+  // ── Data record ──
+  // Split off inline comment
+  let data = t, ann = '';
+  const hi = t.indexOf('#');
+  if (hi > -1) { ann = t.slice(hi); data = t.slice(0, hi).trim(); }
+
+  // No comma at all and not a variable → line is invalid
+  if (ci < 0) {
+    return { ...base, type:'record',
+      errors:[mkIssue('line-invalid','error','Line is invalid and failed all validation')],
+      fields:[data] };
+  }
+
+  const rawFields = data.split(',');
+  const fields = rawFields.map(f => f.trim());
+  const errors = [], warns = [], notices = [];
+
+  // Detect missing account ID: field 2 is DIRECT/RESELLER → record is shifted
+  if (fields.length >= 2 && /^(DIRECT|RESELLER)$/i.test(fields[1])) {
+    errors.push(mkIssue('data-publisher-invalid','error',
+      'Data record account/publisher ID is missing'));
+    return { ...base, type:'record', fields, ann, dom:fields[0]||'', pid:'', rel:'', cert:'', dupK:null, errors, warns, notices };
+  }
+
+  // data-format: must be 3 or 4 parts
+  if (fields.length < 3 || fields.length > 4) {
+    errors.push(mkIssue('data-format','error',
+      `Data record is formatted incorrectly (${fields.length} parts — must be 3 or 4)`));
+  }
+
+  const dom = fields[0] || '', pid = fields[1] || '', rel = fields[2] || '', cert = fields[3] || '';
+  const relU = rel.toUpperCase(), domL = dom.toLowerCase();
+
+  // Field 1 — domain
+  if (!validDomain(dom)) {
+    errors.push(mkIssue('data-domain-invalid','error','Data record domain is invalid'));
+  } else {
+    if (dom !== domL)
+      notices.push(mkIssue('data-domain-case','notice','Data record domain value contains uppercase characters'));
+  }
+
+  // Field 2 — publisher ID (internal whitespace = invalid; separator spaces ignored)
+  if (!pid) errors.push(mkIssue('data-publisher-invalid','error','Data record publisher ID is invalid (empty)'));
+  else if (/\s/.test(pid)) errors.push(mkIssue('data-publisher-invalid','error',`Data record publisher ID "${pid}" is invalid (contains whitespace)`));
+
+  // Field 3 — relationship
+  if (relU !== 'DIRECT' && relU !== 'RESELLER') {
+    errors.push(mkIssue('data-relationship-invalid','error',
+      `Data record relationship value is invalid ("${rel}" — must be DIRECT or RESELLER)`));
+  } else {
+    if (/[a-z]/.test(rel))
+      notices.push(mkIssue('data-relationship-case','notice','Data record relationship value contains lowercase characters'));
+  }
+
+  // Field 4 — certification authority ID
+  const known = CERT_MAP[domL];
+  if (fields.length === 4) {
+    if (!validCertToken(cert)) {
+      errors.push(mkIssue('data-certification-invalid','error','Data record certification ID is invalid'));
+    } else if (known && cert.toLowerCase() !== known) {
+      errors.push(mkIssue('data-certification-incorrect','error',
+        `Data record certification ID is incorrect (${dom} should use ${known})`));
+    }
+  }
+
+
+  // Dedup key = domain + publisher + relationship (cert ignored)
+  const dupK = (fields.length >= 3 && !errors.some(e => ['data-domain-invalid','data-publisher-invalid','data-relationship-invalid','data-format'].includes(e.code)))
+    ? [domL, pid, relU, cert.toLowerCase()].join('\x00') : null;
+
+  return { ...base, type:'record', fields, ann, dom, pid, rel:relU, cert, dupK, errors, warns, notices };
+}
+
+/* ═══════════════════════════════════════════════
+   CLASSIFY DUPLICATES (across all rows)
+═══════════════════════════════════════════════ */
+function classify(rows) {
+  const g = new Map();
+  for (const r of rows) {
+    if (r.type === 'record' && r.dupK) {
+      if (!g.has(r.dupK)) g.set(r.dupK, []);
+      g.get(r.dupK).push(r);
+    }
+  }
+  for (const grp of g.values()) {
+    if (grp.length < 2) continue;
+    const sorted = [...grp].sort((a, b) => a.num - b.num);
+    for (let i = 0; i < sorted.length; i++) {
+      const r = sorted[i];
+      r.alsoOn = sorted.filter(x => x !== r).map(x => x.num);
+      if (i > 0) {
+        r.isDup = true;
+        r.warns.push(mkIssue('duplicate','warning',
+          `Duplicate record — first declared on line ${sorted[0].num}`));
+      }
+    }
+  }
+}
+
+/* Bucket by highest severity: error > duplicate > warning > valid/other (notices = valid) */
+function bucketOf(r) {
+  if (r.type === 'blank') return 'blank';
+  if (r.errors.length) return 'errors';
+  if (r.isDup) return 'duplicates';
+  if (r.warns.length)  return 'warnings';
+  if (r.type === 'comment' || r.type === 'variable') return 'other';
+  return 'valid';
+}
+
+/* ═══════════════════════════════════════════════
+   SELECTION DEFAULTS
+   Export = keep everything EXCEPT errors and duplicate copies.
+═══════════════════════════════════════════════ */
+function initSelections() {
+  for (const r of rows) {
+    r.selected =
+      r.src === 'c' ||
+      r.type === 'comment' ||
+      r.type === 'blank' ||
+      (r.src === 'n' && (bucketOf(r) === 'valid' || (r.type === 'variable' && bucketOf(r) !== 'warnings')));
+  }
+  updateSectionControls();
+}
+
+/* ═══════════════════════════════════════════════
+   RUN ANALYSIS
+═══════════════════════════════════════════════ */
+function runAnalysis() {
+  const ct = $('ta-c').value, nt = $('ta-n').value;
+  if (!ct.trim() && !nt.trim()) { toast('Add some content to analyze.', 'err'); return; }
+
+  const all = [];
+  if (ct.trim()) ct.split('\n').forEach((l,i) => all.push(parseLine(l, i+1, 'c')));
+  if (nt.trim()) {
+    const off = all.length;
+    nt.split('\n').forEach((l,i) => all.push(parseLine(l, off+i+1, 'n')));
+  }
+  classify(all);
+  rows = all;
+  fixInc = []; fixExc = []; fixNew = [];
+  initSelections();
+
+  // Counts
+  let cV=0, cE=0, cW=0, cO=0, cDup=0;
+  for (const r of rows) {
+    if (r.type === 'blank') continue;
+    switch (bucketOf(r)) {
+      case 'valid':      cV++; break;
+      case 'errors':     cE++; break;
+      case 'duplicates': cDup++; break;
+      case 'warnings':   cW++; break;
+      case 'other':      cO++; break;
+    }
+  }
+
+  const nb = rows.filter(r => r.type !== 'blank').length;
+  setText('sv-total',  nb);
+  setText('sv-valid',  cV);
+  setText('sv-err',    cE);
+  setText('sv-warn',   cW);
+  setText('sv-dup',    cDup);
+  setText('tc-all',    nb);
+  setText('tc-err',    cE);
+  setText('tc-warn',   cW);
+  setText('tc-dup',    cDup);
+  setText('tc-valid',  cV);
+  setText('tc-other',  cO);
+
+  activeTab = 'all'; srcFilt = 'all'; pg = 1;
+  $('search-inp').value = '';
+  setTab('all', false);
+  setSrc('all', false);
+  $('sec-results').classList.remove('hidden');
+  $('sec-fix').classList.add('hidden');
+  applyFilters();
+
+  setTimeout(() => $('sec-results').scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+
+  if (cE) toast(`${cE} error${cE===1?'':'s'}${cDup?`, ${cDup} duplicate${cDup===1?'':'s'}`:''}${cW?`, ${cW} warning${cW===1?'':'s'}`:''} found.`, 'err');
+  else if (cDup) toast(`No errors — ${cDup} duplicate${cDup===1?'':'s'}${cW?`, ${cW} warning${cW===1?'':'s'}`:''} to review.`, 'warn');
+  else if (cW) toast(`No errors — ${cW} warning${cW===1?'':'s'} to review.`, 'warn');
+  else toast(`Clean! ${cV} valid records.`, 'ok');
+}
+
+/* ═══════════════════════════════════════════════
+   FILTERING + RENDERING
+═══════════════════════════════════════════════ */
+function applyFilters() {
+  const q = $('search-inp').value.toLowerCase().trim();
+  let r = rows.filter(r => {
+    if (r.type === 'blank') return false;
+    const b = bucketOf(r);
+    switch (activeTab) {
+      case 'all':        return true;
+      case 'errors':     return b === 'errors';
+      case 'warnings':   return b === 'warnings';
+      case 'duplicates': return b === 'duplicates';
+      case 'notices':    return b === 'notices';
+      case 'valid':      return b === 'valid';
+      case 'other':      return r.type === 'comment' || r.type === 'variable';
+      default: return true;
+    }
+  });
+  if (srcFilt !== 'all') r = r.filter(x => x.src === srcFilt);
+  if (q) r = r.filter(x =>
+    x.raw.toLowerCase().includes(q) ||
+    [...x.errors, ...x.warns, ...x.notices].some(i => i.msg.toLowerCase().includes(q) || i.code.includes(q)));
+  filtered = r; pg = 1; updateSectionControls(); renderPage();
+}
+
+function renderPage() {
+  const tbody = $('rtbody');
+  const tot = filtered.length, start = (pg-1)*PG, end = Math.min(start+PG, tot);
+  setText('row-count', tot + ' row' + (tot===1?'':'s'));
+  tbody.innerHTML = '';
+  if (tot === 0) {
+    $('tbl-empty').classList.remove('hidden');
+    $('pgn-bar').classList.add('hidden');
+    return;
+  }
+  $('tbl-empty').classList.add('hidden');
+
+  for (const r of filtered.slice(start, end)) {
+    const tr = document.createElement('tr');
+    tr.className = rowCls(r);
+
+    const tdC = document.createElement('td'); tdC.className='td-sel';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'row-check'; cb.checked = !!r.selected;
+    if ((bucketOf(r) === 'valid' && r.src === 'c') || ((r.type === 'comment' || r.type === 'variable') && r.src === 'c' && bucketOf(r) !== 'warnings')) { cb.disabled = true; cb.style.opacity = '.35'; cb.style.cursor = 'not-allowed'; }
+    else cb.onchange = e => toggleRowSelection(r.num, e.target.checked);
+    tdC.appendChild(cb);
+
+    const tdL = document.createElement('td'); tdL.className='td-line'; tdL.textContent = r.num;
+
+    const tdS = document.createElement('td'); tdS.className='td-src';
+    tdS.innerHTML = r.src === 'n'
+      ? '<span class="sp sp-n"><span class="sp-dot"></span>New</span>'
+      : '<span class="sp sp-c"><span class="sp-dot"></span>Current</span>';
+
+    const tdR = document.createElement('td'); tdR.className='td-raw';
+    let rh = '<span class="raw-txt">' + esc(r.raw) + '</span>';
+    const iss = [
+      ...r.errors.map(i => issRow('iss-e','✕',i)),
+      ...r.warns.map(i  => issRow('iss-w','⚠',i)),
+      ...r.notices.map(i=> issRow('iss-n','ℹ',i))
+    ];
+    if (iss.length) rh += '<div class="iss-list">' + iss.join('') + '</div>';
+    tdR.innerHTML = rh;
+
+    const tdA = document.createElement('td'); tdA.className='td-also';
+    if (r.alsoOn?.length) tdA.innerHTML = '<div class="lpills">' + r.alsoOn.map(n=>`<span class="lpill">${n}</span>`).join('') + '</div>';
+
+    const tdSt = document.createElement('td'); tdSt.className='td-st'; tdSt.innerHTML = stPill(r);
+    tr.append(tdC, tdL, tdS, tdR, tdA, tdSt);
+    tbody.appendChild(tr);
+  }
+  renderPgn(tot, start, end);
+}
+
+function issRow(cls, icon, i) {
+  return `<span class="iss ${cls}">${icon} ${esc(i.msg)} <span class="iss-code">[${esc(i.code)}]</span></span>`;
+}
+
+function renderPgn(tot, start, end) {
+  const bar = $('pgn-bar'), pages = Math.ceil(tot/PG);
+  if (pages <= 1) { bar.classList.add('hidden'); return; }
+  bar.classList.remove('hidden');
+  setText('pgn-info', `${start+1}–${end} of ${tot}`);
+  const btns = $('pgn-btns'); btns.innerHTML = '';
+  const mk = (lbl, p, active, dis) => {
+    const b = document.createElement('button');
+    b.className = 'pbtn' + (active?' sel':''); b.textContent = lbl; b.disabled = !!dis;
+    if (!dis) b.onclick = () => { pg = p; renderPage(); };
+    btns.appendChild(b);
+  };
+  mk('‹', pg-1, false, pg===1);
+  const vis = new Set([1, pages]);
+  for (let p = Math.max(2,pg-2); p <= Math.min(pages-1,pg+2); p++) vis.add(p);
+  let prev = 0;
+  for (const p of [...vis].sort((a,b)=>a-b)) {
+    if (prev && p-prev>1) { const e=document.createElement('span'); e.className='pellipsis'; e.textContent='…'; btns.appendChild(e); }
+    mk(p, p, p===pg, false); prev=p;
+  }
+  mk('›', pg+1, false, pg===pages);
+}
+
+/* ═══════════════════════════════════════════════
+   SELECTION CONTROLS
+═══════════════════════════════════════════════ */
+function updateSectionControls() {
+  const control = $('sel-all');
+  if (!control) return;
+  const group = filtered.length ? filtered : rows.filter(r => r.type !== 'blank');
+  if (!group.length) { control.checked=false; control.indeterminate=false; control.disabled=true; return; }
+  const sel = group.filter(r => r.selected).length;
+  control.disabled = false;
+  control.checked = sel === group.length;
+  control.indeterminate = sel > 0 && sel < group.length;
+}
+function toggleAllSelection(checked) {
+  const group = filtered.length ? filtered : rows.filter(r => r.type !== 'blank');
+  group.forEach(r => { r.selected = checked; });
+  updateSectionControls(); renderPage();
+  if (!$('sec-fix').classList.contains('hidden')) buildFix();
+}
+function toggleRowSelection(num, checked) {
+  const row = rows.find(r => r.num === num); if (!row) return;
+  row.selected = checked; updateSectionControls();
+  if (!$('sec-fix').classList.contains('hidden')) buildFix();
+}
+
+/* ═══════════════════════════════════════════════
+   FIX & EXPORT
+═══════════════════════════════════════════════ */
+function exclusionReason(r) {
+  if (r.errors.length) return r.errors[0].msg;
+  if (r.isDup)         return r.warns.find(w=>w.code==='duplicate')?.msg || 'Duplicate record';
+  return 'Excluded by manual selection';
+}
+
+function trimTrailingBlankLines(lines) {
+  while (lines.length && !String(lines[lines.length - 1]).trim()) lines.pop();
+}
+
+function buildFix() {
+  fixInc = []; fixExc = []; fixNew = [];
+  let newBlockStarted = false;
+  for (const r of rows) {
+    if (r.type === 'blank') { fixInc.push(r.raw); if (r.src==='n') fixNew.push(r.raw); continue; }
+    if (!r.selected) { fixExc.push({ num:r.num, raw:r.raw, src:r.src, why:exclusionReason(r) }); continue; }
+    if (r.src === 'n' && !newBlockStarted) {
+      if (fixInc.length && String(fixInc[fixInc.length - 1]).trim()) fixInc.push('');
+      newBlockStarted = true;
+    }
+    fixInc.push(r.raw);
+    if (r.src === 'n') fixNew.push(r.raw);
+  }
+
+  trimTrailingBlankLines(fixInc);
+  trimTrailingBlankLines(fixNew);
+
+  $('incl-out').value = fixInc.join('\n');
+  setText('fc-in', fixInc.length + ' included');
+  $('new-out').value = fixNew.join('\n');
+  setText('fc-new', fixNew.length + ' new');
+
+  const tbody = $('excl-body'); tbody.innerHTML = '';
+  if (!fixExc.length) {
+    tbody.innerHTML = '<tr class="excl-empty-row"><td colspan="3">✓ Nothing excluded — no errors or duplicates</td></tr>';
+  } else {
+    for (const ex of fixExc) {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td class="excl-ln">${ex.num}</td>` +
+        `<td><div class="excl-raw">${esc(ex.raw)}</div><div class="excl-why">${esc(ex.why)}</div></td>` +
+        `<td class="excl-src">${ex.src==='n'?'<span class="sp sp-n"><span class="sp-dot"></span>New</span>':'<span class="sp sp-c"><span class="sp-dot"></span>Current</span>'}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+  setText('fc-ex', fixExc.length + ' excluded');
+  $('sec-fix').classList.remove('hidden');
+  setTimeout(() => $('sec-fix').scrollIntoView({ behavior:'smooth', block:'start' }), 80);
+}
+
+function copyIncluded() { copyTxt($('incl-out').value, 'Copied included records!'); }
+function copyNewLines() { copyTxt($('new-out').value, 'Copied new lines!'); }
+function copyExcluded() {
+  const txt = fixExc.map(e => `# Line ${e.num}: ${e.why}\n${e.raw}`).join('\n');
+  copyTxt(txt, 'Copied excluded entries!');
+}
+function dlFixed() {
+  const content = $('incl-out').value;
+  if (!content) { toast('Nothing to download.', 'warn'); return; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type:'text/plain;charset=utf-8'}));
+  a.download = 'ads.txt'; a.click();
+  toast('Downloaded ads.txt!', 'ok');
+}
+
+/* ═══════════════════════════════════════════════
+   UI STATE HELPERS
+═══════════════════════════════════════════════ */
+function rowCls(r) {
+  switch (bucketOf(r)) {
+    case 'errors':     return 'rr-err';
+    case 'warnings':   return 'rr-warn';
+    case 'duplicates': return 'rr-dup';
+    case 'notices':    return 'rr-notice';
+    case 'other':      return 'rr-dim';
+    default:           return '';
+  }
+}
+function stPill(r) {
+  const b = bucketOf(r);
+  if (b === 'errors')     return '<span class="pill p-err">Error</span>';
+  if (b === 'duplicates') return '<span class="pill p-dup">Duplicate</span>';
+  if (b === 'warnings')   return '<span class="pill p-warn">Warning</span>';
+  if (b === 'notices')    return '<span class="pill p-notice">Notice</span>';
+  if (r.type === 'comment')  return '<span class="pill p-cmt">Comment</span>';
+  if (r.type === 'variable') return '<span class="pill p-var">Variable</span>';
+  return '<span class="pill p-valid">Valid</span>';
+}
+
+function setTab(t, apply=true) {
+  activeTab = t; pg = 1;
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('sel', b.dataset.t === t));
+  document.querySelectorAll('.sc').forEach(c => c.classList.toggle('sel', c.dataset.f === t));
+  if (apply) applyFilters();
+}
+function scClick(el, f) {
+  document.querySelectorAll('.sc').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel'); setTab(f);
+}
+function setSrc(s, apply=true) {
+  srcFilt = s;
+  $('sfb-all').className = 'sf-btn' + (s==='all' ? ' sf-all' : '');
+  $('sfb-c').className   = 'sf-btn' + (s==='c'   ? ' sf-cur' : '');
+  $('sfb-n').className   = 'sf-btn' + (s==='n'   ? ' sf-new' : '');
+  if (apply) applyFilters();
+}
+
+/* ═══════════════════════════════════════════════
+   INPUT HANDLING
+═══════════════════════════════════════════════ */
+function updateMeta(id) {
+  const n = $(id).value ? $(id).value.split('\n').length : 0;
+  $('pm-' + id.replace('ta-','')).textContent = n + ' line' + (n===1?'':'s');
+}
+function clearPanel(w) { $('ta-'+w).value=''; updateMeta('ta-'+w); }
+function clearAll() {
+  clearPanel('c'); clearPanel('n');
+  $('sec-results').classList.add('hidden');
+  $('sec-fix').classList.add('hidden');
+  rows = []; filtered = []; updateSectionControls();
+}
+
+const EXAMPLE = `# <Google>
+google.com, pub-4874685623693608, DIRECT, f08c47fec0942fa0
+appnexus.com, 12290, RESELLER
+rubiconproject.com, 23564, RESELLER, 0bfd66d529a55806
+smartadserver.com, 4257, Direct
+Media.net, 8CUD0UKE8, RESELLER
+smartadserver.com, DIRECT, 060d053dcf45cbf3
+conversantmedia.com, 100141, DIRECT/RESELLER, 03113cd04947736d
+MANAGERDOMAIN=tapmind.com
+inventorypartnerdomain=playstream.media
+lijit.com, 270791, DIRECT, fafdf38b16bf6b2b #SOVRN
+appnexus.com, 12290, RESELLER
+CONTACT=adops@example.com`;
+
+function loadExample() {
+  $('ta-c').value = EXAMPLE;
+  updateMeta('ta-c');
+  toast('Example loaded — click Analyze & Validate', 'ok');
+}
+
+['c','n'].forEach(w => {
+  const taEl = $('ta-'+w);
+  if (taEl) taEl.addEventListener('input', () => updateMeta('ta-'+w));
+
+  const fiEl = $('fi-'+w);
+  if (fiEl) {
+    fiEl.addEventListener('change', e => {
+      const f = e.target.files[0]; if (f) readFile(f, w); e.target.value='';
+    });
+  }
+
+  const dz = $('dz-'+w);
+  if (dz) {
+    dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault(); dz.classList.remove('drag-over');
+      const f = e.dataTransfer.files[0]; if (f) readFile(f, w);
+    });
+  }
+});
+
+function readFile(file, w) {
+  const rd = new FileReader();
+  rd.onload = e => {
+    const text = e.target.result;
+    if (text.startsWith('%PDF') || /[\x00-\x08\x0E-\x1F]/.test(text.slice(0, 1000))) {
+      toast(`"${file.name}" is a binary or PDF file — please upload a plain text ads.txt file.`, 'err');
+      return;
+    }
+    $('ta-'+w).value = text; updateMeta('ta-'+w); toast(`Loaded "${file.name}"`, 'ok');
+  };
+  rd.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function $(id) { return document.getElementById(id); }
+function setText(id, v) { const el=$(id); if (el) el.textContent = v; }
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function copyTxt(txt, msg) {
+  (navigator.clipboard
+    ? navigator.clipboard.writeText(txt).then(() => toast(msg,'ok')).catch(() => fbCopy(txt,msg))
+    : fbCopy(txt, msg));
+}
+function fbCopy(txt, msg) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.style.cssText = 'position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta); toast(msg,'ok');
+}
+/* ═══════════════════════════════════════════════
+   AUTO-FETCH hotstar.com/ads.txt
+═══════════════════════════════════════════════ */
+async function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(id); return res;
+  } catch(e) { clearTimeout(id); throw e; }
+}
+
+function looksLikeAdsTxt(text) {
+  const t = text.trim();
+  if (!t) return false;
+  if (t.startsWith('<!') || t.startsWith('<html') || t.startsWith('{')) return false;
+  return true;
+}
+
+window.__BOOTSTRAP_ADS_TXT__ = null;
+window.__BOOTSTRAP_ADS_TXT_ERROR__ = "";
+let _fetchRunId = 0;
+
+function applyCurrentAdsTxt(text, toastMsg='Loaded hotstar.com/ads.txt') {
+  const ta = $('ta-c');
+  ta.value = text;
+  ta.placeholder = '';
+  updateMeta('ta-c');
+  if (toastMsg) toast(toastMsg, 'ok');
+}
+
+async function fetchCurrentAdsTxt() {
+  const runId = ++_fetchRunId;
+  const ta = $('ta-c'), btn = $('btn-reload-c');
+  const sameOrigin = window.location.origin && window.location.origin !== 'null';
+  const fetchUrl = sameOrigin ? `${window.location.origin}/hotstar-ads.txt?ts=${Date.now()}` : null;
+  const isLocalApp = sameOrigin && /^(localhost|127\.0\.0\.1):\d+$/.test(window.location.host);
+
+  ta.placeholder = 'Loading hotstar.com/ads.txt…';
+  if (btn) btn.disabled = true;
+
+  if (!isLocalApp || !fetchUrl) {
+    ta.value = '';
+    ta.placeholder = [
+      'Auto-load requires the local server.',
+      '',
+      'Run:',
+      '  python3 server.py',
+      'then open the local URL shown in Terminal.'
+    ].join('\n');
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  try {
+    const res = await fetchWithTimeout(fetchUrl, 25000);
+    if (runId !== _fetchRunId) return;
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(`HTTP ${res.status}: ${detail || res.statusText}`);
+    }
+    const text = await res.text();
+    if (runId !== _fetchRunId) return;
+    if (!looksLikeAdsTxt(text)) throw new Error('Unexpected response format');
+    applyCurrentAdsTxt(text);
+  } catch (e) {
+    if (runId !== _fetchRunId) return;
+    ta.value = '';
+    ta.placeholder = [
+      'Auto-load failed.',
+      '',
+      String(e.message || e),
+      '',
+      'Please click Refresh once more, or paste the ads.txt content manually.'
+    ].join('\n');
+    toast('Auto-load failed — local server could not fetch hotstar.com/ads.txt.', 'err');
+    console.warn('[ads.txt] local fetch failed:', e.message);
+  }
+  if (btn) btn.disabled = false;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  if (looksLikeAdsTxt(window.__BOOTSTRAP_ADS_TXT__ || '')) {
+    applyCurrentAdsTxt(window.__BOOTSTRAP_ADS_TXT__, '');
+    return;
+  }
+  if (!window.__BOOTSTRAP_ADS_TXT_ERROR__) {
+    fetchCurrentAdsTxt();
+    return;
+  }
+  const ta = $('ta-c');
+  ta.value = '';
+  ta.placeholder = [
+    'Auto-load failed on page open.',
+    '',
+    window.__BOOTSTRAP_ADS_TXT_ERROR__ || 'The local server did not return ads.txt data.',
+    '',
+    'Reload the page to try again.'
+  ].join('\n');
+  updateMeta('ta-c');
+  toast('Auto-load failed on page open — see details in the text area.', 'err');
+});
+
+let _tt;
+function toast(msg, type) {
+  const el = $('toast-el');
+  el.textContent = msg; el.className = 'toast show' + (type?' '+type:'');
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
