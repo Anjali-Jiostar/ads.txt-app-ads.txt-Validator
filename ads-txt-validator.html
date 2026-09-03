@@ -765,6 +765,13 @@ function validDomain(d) {
     return /^[a-zA-Z0-9-]+$/.test(l);
   });
 }
+function validDataSeller(d) {
+  if (!d || d.length > 253 || /[\s,/:]/.test(d)) return false;
+  return d.split('.').every(l => {
+    if (!l || l.length > 63 || l[0] === '-' || l[l.length-1] === '-') return false;
+    return /^[a-zA-Z0-9-]+$/.test(l);
+  });
+}
 /* Cert IDs are hex-ish tokens; TAG IDs are 16 hex chars but many
    exchanges use other alphanumeric forms, so we only reject spaces. */
 function validCertToken(c) { return c.length > 0 && !/[\s,]/.test(c); }
@@ -845,7 +852,7 @@ function parseLine(raw, num, src) {
   const relU = rel.toUpperCase(), domL = dom.toLowerCase();
 
   // Field 1 — domain
-  if (!validDomain(dom)) {
+  if (!validDataSeller(dom)) {
     errors.push(mkIssue('data-domain-invalid','error','Data record domain is invalid'));
   } else {
     if (dom !== domL)
