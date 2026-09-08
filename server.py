@@ -14,6 +14,7 @@ import urllib.request
 PORT = int(os.environ.get('PORT', '8080'))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 HTML = os.path.join(BASE_DIR, 'ads-txt-validator.html')
+HELP_HTML = os.path.join(BASE_DIR, 'help.html')
 TARGET = 'https://www.hotstar.com/ads.txt'
 SSL_CTX = ssl.create_default_context()
 BOOTSTRAP_TOKEN = 'window.__BOOTSTRAP_ADS_TXT__ = null;'
@@ -56,7 +57,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
-        if self.path in ('/', '/index.html'):
+        if self.path in ('/', '/index.html', '/ads-txt-validator.html'):
             with open(HTML, 'r', encoding='utf-8') as file:
                 body = file.read()
 
@@ -77,6 +78,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.send_header('Cache-Control', 'no-store')
             self.end_headers()
             self.wfile.write(body.encode('utf-8'))
+            return
+
+        if self.path in ('/help.html', '/help'):
+            with open(HELP_HTML, 'rb') as file:
+                body = file.read()
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/html; charset=utf-8')
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(body)
             return
 
         if self.path.startswith('/hotstar-ads.txt'):

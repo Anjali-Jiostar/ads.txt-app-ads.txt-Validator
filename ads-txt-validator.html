@@ -654,6 +654,8 @@ header{background:rgba(255,255,255,.78);border-bottom-color:rgba(148,163,184,.26
 }
 .btn-primary:hover,.btn-sec:hover{background:#6478f1;box-shadow:5px 5px 0 #283b9b,0 10px 20px rgba(63,82,198,.26),inset 0 1px rgba(255,255,255,.35);transform:translate(-1px,-1px)}
 .btn-primary:active,.btn-sec:active{background:#465bd2;box-shadow:1px 1px 0 #283b9b,0 3px 7px rgba(63,82,198,.18);transform:translate(3px,3px) scale(.99)}
+.help-link{display:inline-flex;align-items:center;gap:.32rem;padding:.22rem .5rem;border:1px solid #d8defb;border-radius:var(--rx);background:#f7f8ff;color:#4056b8;font-size:.64rem;font-weight:700;text-decoration:none;transition:.15s ease}
+.help-link:hover{background:#eef2ff;border-color:#b9c7f7;color:#2945a5;transform:translateY(-1px)}
 @media(max-width:780px){.tabs-bar{overflow-x:auto;flex-wrap:nowrap}.tb{flex:0 0 auto}}
 </style>
 </head>
@@ -681,7 +683,10 @@ header{background:rgba(255,255,255,.78);border-bottom-color:rgba(148,163,184,.26
         </div>
       </div>
       <div class="hdr-side">
-        <span class="server-badge">Local server</span>
+        <a class="help-link" href="help.html" aria-label="Open help guide">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.35 2.35 0 1 1 3.9 1.77c-.9.72-1.6 1.16-1.6 2.48"/><path d="M12 16.6h.01"/></svg>
+          Help
+        </a>
         <span class="iab-badge">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           IAB Spec v1.0.2
