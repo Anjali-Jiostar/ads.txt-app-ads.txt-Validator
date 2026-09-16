@@ -1553,6 +1553,14 @@ function looksLikeAdsTxt(text) {
 window.__BOOTSTRAP_ADS_TXT__ = null;
 window.__BOOTSTRAP_ADS_TXT_ERROR__ = "";
 let _fetchRunId = 0;
+const ADS_LOAD_FAILURE_MESSAGE = [
+  'Failed to load. Please reload or click Refresh to try again.',
+  '',
+  'Sample entries:',
+  'google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0',
+  'rubiconproject.com, 17264, DIRECT, 0bfd66d529a55807',
+  'openx.com, 537143056, RESELLER, 6a698e2ec38604c6'
+].join('\n');
 
 function applyCurrentAdsTxt(text, toastMsg='Loaded hotstar.com/ads.txt') {
   const ta = $('ta-c');
@@ -1574,13 +1582,7 @@ async function fetchCurrentAdsTxt() {
 
   if (!isLocalApp || !fetchUrl) {
     ta.value = '';
-    ta.placeholder = [
-      'Auto-load requires the local server.',
-      '',
-      'Run:',
-      '  python3 server.py',
-      'then open the local URL shown in Terminal.'
-    ].join('\n');
+    ta.placeholder = ADS_LOAD_FAILURE_MESSAGE;
     if (btn) btn.disabled = false;
     return;
   }
@@ -1589,25 +1591,17 @@ async function fetchCurrentAdsTxt() {
     const res = await fetchWithTimeout(fetchUrl, 25000);
     if (runId !== _fetchRunId) return;
     if (!res.ok) {
-      const detail = await res.text();
-      throw new Error(`HTTP ${res.status}: ${detail || res.statusText}`);
+      throw new Error('Fetch failed');
     }
     const text = await res.text();
     if (runId !== _fetchRunId) return;
-    if (!looksLikeAdsTxt(text)) throw new Error('Unexpected response format');
+    if (!looksLikeAdsTxt(text)) throw new Error('Fetch failed');
     applyCurrentAdsTxt(text);
-  } catch (e) {
+  } catch {
     if (runId !== _fetchRunId) return;
     ta.value = '';
-    ta.placeholder = [
-      'Auto-load failed.',
-      '',
-      String(e.message || e),
-      '',
-      'Please click Refresh once more, or paste the ads.txt content manually.'
-    ].join('\n');
-    toast('Auto-load failed — local server could not fetch hotstar.com/ads.txt.', 'err');
-    console.warn('[ads.txt] local fetch failed:', e.message);
+    ta.placeholder = ADS_LOAD_FAILURE_MESSAGE;
+    toast('Failed to load. Please reload or click Refresh to try again.', 'err');
   }
   if (btn) btn.disabled = false;
 }
@@ -1622,15 +1616,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const ta = $('ta-c');
   ta.value = '';
-  ta.placeholder = [
-    'Auto-load failed on page open.',
-    '',
-    window.__BOOTSTRAP_ADS_TXT_ERROR__ || 'The local server did not return ads.txt data.',
-    '',
-    'Reload the page to try again.'
-  ].join('\n');
+  ta.placeholder = ADS_LOAD_FAILURE_MESSAGE;
   updateMeta('ta-c');
-  toast('Auto-load failed on page open — see details in the text area.', 'err');
+  toast('Failed to load. Please reload or click Refresh to try again.', 'err');
 });
 
 let _tt;
